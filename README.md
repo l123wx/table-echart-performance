@@ -1,45 +1,18 @@
-# 自动部署项目到 GitHub Pages 的项目模板
+# Table 中大量 Echart 图表的优化探索
 
-简体中文 | [English](./README_EN.md)
+Echart 服务端 svg 渲染 + Web Worker + Table 虚拟滚动
 
-**使用 Vue3 + Typescript + Vite**
+| 渲染方案                 | 加载体积 | 功能及交互损失                                               | 相对开发工作量 | 推荐场景                                                     |
+| :----------------------- | :------- | :----------------------------------------------------------- | :------------- | :----------------------------------------------------------- |
+| 客户端渲染               | 最大     | 无                                                           | 最小           | 首屏加载时间不敏感，对功能交互完整性要求高                   |
+| 一次性服务端 SVG 渲染    | 小       | 大：无法动态改变数据、不支持图例切换系列是否显示、不支持提示框等实时性要求高的交互 | 中             | 首屏加载时间敏感，对功能交互完整性要求低                     |
 
-已经配置好 GitHub Actions，推送代码到 master 分支就会自动部署项目到 GitHub Pages 生成预览页面
+注意：在 Worker 中使用 Echart SSR 时，需要模拟 global 变量。因为 Worker 的全局对象是 self，而 Echart SSR 使用到了 node 环境的 global 变量：
 
-## 使用这个模版的好处
-
- - 只需要一个操作，不需要额外的配置
- - 无需修改 YAML 文件，自动根据 package.json packageManager 配置选择包管理器，确保行为一致性
- - 不会生成多余的分支
-
-## 操作步骤
-
-只需在 GitHub 仓库 Setting > Pages > Source 选择 GitHub Actions
-
-![image](https://github.com/l123wx/vite-vue-github-pages/assets/48666585/77d1bcf1-a066-4a63-8423-e16491815048)
-
-后续推送代码到 master 分支都会自动打包并部署到 GitHub Pages
-
-## 在其他项目中使用
-
-将 `.github/workflows/main.yml` 文件复制到你想改造的项目，根据项目实际情况调整打包步骤：
-
-```yaml
-# 安装依赖
-- name: Install dependencies
-  run: ni
-# 打包项目
-- name: Build
-  run: nr build
+```
+if (typeof global === 'undefined') {
+  (self as any).global = self;
+}
 ```
 
-使用了 @antfu/ni 库来实现包管理器的自动识别，`ni` 等效于 `npm install`，`nr` 等效于 `npm run`，更多命令可以查看[官方文档](https://github.com/antfu-collective/ni#ni)
-
-默认的 `Jekyll` 打包路径为 `dist`，如果项目 build 输出路径不是 `dist`，可以修改 Build with Jekyll 步骤的 `source`：
-
-```yaml
-- name: Build with Jekyll
-  uses: actions/jekyll-build-pages@v1
-  with:
-    source: ./dist
-```
+> https://echarts.apache.org/handbook/zh/how-to/cross-platform/server/#%E6%9C%8D%E5%8A%A1%E7%AB%AF-svg-%E6%B8%B2%E6%9F%93
