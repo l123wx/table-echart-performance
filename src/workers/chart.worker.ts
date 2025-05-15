@@ -65,7 +65,7 @@ function generateChart(options: echarts.EChartsOption) {
   console.log('generateChart', options)
   return new Promise<string>((resolve) => {
     setTimeout(() => {
-      chart.setOption(options);
+      chart.setOption(options, true);
 
       // 输出字符串
       const svgStr = chart.renderToSVGString();
