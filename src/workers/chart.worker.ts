@@ -70,7 +70,7 @@ function generateChart(options: echarts.EChartsOption) {
       // 输出字符串
       const svgStr = chart.renderToSVGString();
       resolve(svgStr);
-    }, 10);
+    });
   })
 }
 
